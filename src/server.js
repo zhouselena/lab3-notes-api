@@ -5,8 +5,8 @@ import path from 'path';
 import morgan from 'morgan';
 import socketio from 'socket.io';
 import http from 'http';
-// import throttle from 'lodash.throttle';
-// import debounce from 'lodash.debounce';
+import throttle from 'lodash.throttle';
+import debounce from 'lodash.debounce';
 import * as Notes from './controllers/note_controller';
 
 // initialize
@@ -59,22 +59,22 @@ async function startServer() {
     // lets register a connection listener
     io.on('connection', (socket) => {
       // add these at the top of your: io.on('connection' section
-      // let emitToSelf = (notes) => {
-      //   socket.emit('notes', notes);
-      // };
-      // emitToSelf = debounce(emitToSelf, 200);
+      let emitToSelf = (notes) => {
+        socket.emit('notes', notes);
+      };
+      emitToSelf = debounce(emitToSelf, 200);
 
-      // let emitToOthers = (notes) => {
-      //   socket.broadcast.emit('notes', notes);
-      // };
-      // emitToOthers = throttle(emitToOthers, 25);
+      let emitToOthers = (notes) => {
+        socket.broadcast.emit('notes', notes);
+      };
+      emitToOthers = throttle(emitToOthers, 25);
 
-      // const pushNotesSmoothed = () => {
-      //   Notes.getNotes().then((result) => {
-      //     emitToSelf(result);
-      //     emitToOthers(result);
-      //   });
-      // };
+      const pushNotesSmoothed = () => {
+        Notes.getNotes().then((result) => {
+          emitToSelf(result);
+          emitToOthers(result);
+        });
+      };
 
       // on first connection emit notes
       Notes.getNotes().then((result) => {
@@ -104,12 +104,11 @@ async function startServer() {
       // on update note do what is needful
       socket.on('updateNote', (id, fields) => {
         Notes.updateNote(id, fields).then(() => {
-          pushNotes();
-          // if (fields.text) {
-          //   pushNotes();
-          // } else {
-          //   pushNotesSmoothed();
-          // }
+          if (fields.text) {
+            pushNotes();
+          } else {
+            pushNotesSmoothed();
+          }
         });
       });
 

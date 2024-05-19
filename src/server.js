@@ -62,7 +62,7 @@ async function startServer() {
       let emitToSelf = (notes) => {
         socket.emit('notes', notes);
       };
-      emitToSelf = debounce(emitToSelf, 200);
+      emitToSelf = debounce(emitToSelf, 50);
 
       let emitToOthers = (notes) => {
         socket.broadcast.emit('notes', notes);

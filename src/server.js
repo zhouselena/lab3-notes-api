@@ -6,7 +6,7 @@ import morgan from 'morgan';
 import socketio from 'socket.io';
 import http from 'http';
 import throttle from 'lodash.throttle';
-import debounce from 'lodash.debounce';
+// import debounce from 'lodash.debounce';
 import * as Notes from './controllers/note_controller';
 
 // initialize
@@ -59,20 +59,31 @@ async function startServer() {
     // lets register a connection listener
     io.on('connection', (socket) => {
       // add these at the top of your: io.on('connection' section
-      let emitToSelf = (notes) => {
-        socket.emit('notes', notes);
-      };
-      emitToSelf = debounce(emitToSelf, 50);
+      // let emitToSelf = (notes) => {
+      //   socket.emit('notes', notes);
+      // };
+      // emitToSelf = debounce(emitToSelf, 50);
 
-      let emitToOthers = (notes) => {
+      // let emitToOthers = (notes) => {
+      //   socket.broadcast.emit('notes', notes);
+      // };
+      // emitToOthers = throttle(emitToOthers, 25);
+
+      // const pushNotesSmoothed = () => {
+      //   Notes.getNotes().then((result) => {
+      //     emitToSelf(result);
+      //     emitToOthers(result);
+      //   });
+      // };
+      let emitNotes = (notes) => {
+        socket.emit('notes', notes);
         socket.broadcast.emit('notes', notes);
       };
-      emitToOthers = throttle(emitToOthers, 25);
+      emitNotes = throttle(emitNotes, 50);
 
       const pushNotesSmoothed = () => {
         Notes.getNotes().then((result) => {
-          emitToSelf(result);
-          emitToOthers(result);
+          emitNotes(result);
         });
       };
 

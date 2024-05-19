@@ -5,7 +5,7 @@ import path from 'path';
 import morgan from 'morgan';
 import socketio from 'socket.io';
 import http from 'http';
-import throttle from 'lodash.throttle';
+// import throttle from 'lodash.throttle';
 // import debounce from 'lodash.debounce';
 import * as Notes from './controllers/note_controller';
 
@@ -62,7 +62,7 @@ async function startServer() {
       // let emitToSelf = (notes) => {
       //   socket.emit('notes', notes);
       // };
-      // emitToSelf = debounce(emitToSelf, 50);
+      // emitToSelf = debounce(emitToSelf, 200);
 
       // let emitToOthers = (notes) => {
       //   socket.broadcast.emit('notes', notes);
@@ -75,17 +75,6 @@ async function startServer() {
       //     emitToOthers(result);
       //   });
       // };
-      let emitNotes = (notes) => {
-        socket.emit('notes', notes);
-        socket.broadcast.emit('notes', notes);
-      };
-      emitNotes = throttle(emitNotes, 50);
-
-      const pushNotesSmoothed = () => {
-        Notes.getNotes().then((result) => {
-          emitNotes(result);
-        });
-      };
 
       // on first connection emit notes
       Notes.getNotes().then((result) => {
@@ -115,11 +104,12 @@ async function startServer() {
       // on update note do what is needful
       socket.on('updateNote', (id, fields) => {
         Notes.updateNote(id, fields).then(() => {
-          if (fields.text) {
-            pushNotes();
-          } else {
-            pushNotesSmoothed();
-          }
+          pushNotes();
+          // if (fields.text) {
+          //   pushNotes();
+          // } else {
+          //   pushNotesSmoothed();
+          // }
         });
       });
 
